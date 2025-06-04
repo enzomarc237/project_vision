@@ -1,16 +1,52 @@
 import 'package:flutter/cupertino.dart';
 import 'package:macos_ui/macos_ui.dart';
-import 'package:project_vision/screens/idea_input_screen.dart'; // To be created
+import 'package:project_vision/screens/idea_input_screen.dart';
+import 'package:project_vision/models/project_data.dart';
+import 'package:intl/intl.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // New import
+import 'package:project_vision/providers/storage_provider.dart'; // New import
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget { // Changed to ConsumerStatefulWidget
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState(); // Changed to ConsumerState
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> { // Changed to ConsumerState
   int _pageIndex = 0;
+  List<ProjectData> _savedProjects = [];
+  bool _isLoadingProjects = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchSavedProjects();
+  }
+
+  Future<void> _fetchSavedProjects() async {
+    if (!mounted) return;
+    setState(() { _isLoadingProjects = true; });
+    try {
+      final storageService = ref.read(storageServiceProvider);
+      final projects = await storageService.getAllProjects();
+      if (mounted) {
+        setState(() {
+          _savedProjects = projects;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+         print("Error fetching projects: $e");
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingProjects = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -113,8 +149,73 @@ class _HomeScreenState extends State<HomeScreen> {
           // Placeholder for "New Project Idea" screen content (Index 1)
           // This will be handled by navigation for now
           Container(child: Center(child: Text("Redirecting to New Project Idea..."))),
-          // Placeholder for "My Projects" screen content (Index 2)
-          Container(child: Center(child: Text("My Projects (Coming Soon)"))),
+
+          // Content for "My Projects" (Index 2)
+          MacosScaffold(
+            toolBar: ToolBar(
+              title: const Text('My Saved Projects'),
+              actions: [
+                ToolBarIconButton(
+                  label: 'Refresh',
+                  icon: const MacosIcon(CupertinoIcons.refresh),
+                  onPressed: _fetchSavedProjects, // Add refresh functionality
+                  showLabel: false,
+                ),
+              ],
+            ),
+            children: [
+              ContentArea(
+                builder: (context, scrollController) {
+                  if (_isLoadingProjects) {
+                    return const Center(child: ProgressCircle(value: null));
+                  }
+                  if (_savedProjects.isEmpty) {
+                    return Center(
+                      child: Text(
+                        'No saved projects yet.',
+                        style: MacosTheme.of(context).typography.headline,
+                      ),
+                    );
+                  }
+                  return ListView.builder(
+                    controller: scrollController,
+                    itemCount: _savedProjects.length,
+                    itemBuilder: (context, index) {
+                      final project = _savedProjects[index];
+                      return MacosListTile(
+                        leading: MacosIcon(CupertinoIcons.doc_text, color: MacosTheme.of(context).primaryColor),
+                        title: Text(project.title, style: MacosTheme.of(context).typography.body),
+                        subtitle: Text(
+                          'Last updated: ${DateFormat.yMMMd().add_jm().format(project.lastUpdatedAt)}',
+                          style: MacosTheme.of(context).typography.caption1,
+                        ),
+                        onClick: () {
+                          print('Clicked on project: ${project.title}');
+                          showMacosAlertDialog(
+                              context: context,
+                              builder: (_) => MacosAlertDialog(
+                                    appIcon: const MacosIcon(CupertinoIcons.doc_text),
+                                    title: Text(project.title, style: MacosTheme.of(context).typography.headline),
+                                    message: Text(
+                                      "Concept: ${project.projectConcept.substring(0, (project.projectConcept.length > 100) ? 100 : project.projectConcept.length)}${project.projectConcept.length > 100 ? "..." : ""}\n"
+                                      "Created: ${DateFormat.yMMMd().format(project.createdAt)}\n"
+                                      "${project.aiExpansionResults != null ? 'AI Summary: ${project.aiExpansionResults!.summary.substring(0, (project.aiExpansionResults!.summary.length > 100) ? 100 : project.aiExpansionResults!.summary.length)}${project.aiExpansionResults!.summary.length > 100 ? "..." : ""}' : 'No AI analysis found.'}",
+                                       style: MacosTheme.of(context).typography.body,
+                                    ),
+                                    primaryButton: PushButton(
+                                      buttonSize: ButtonSize.large,
+                                      child: const Text('OK'),
+                                      onPressed: () => Navigator.of(context).pop(),
+                                    ),
+                                  ));
+                        },
+                      );
+                    },
+                  );
+                },
+              ),
+            ],
+          ),
           // Placeholder for "Settings" screen content (Index 3)
           Container(child: Center(child: Text("Settings (Coming Soon)"))),
         ],
