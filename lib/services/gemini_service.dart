@@ -42,7 +42,8 @@ class GeminiService implements AIService {
     required String concept,
     String? goals,
     String? audience,
-    Map<String, String>? questionnaireAnswers, // New parameter
+    Map<String, String>? questionnaireAnswers,
+    Map<String, String>? projectCategories, // New parameter
   }) async {
     if (_model == null) {
       throw Exception("Gemini model is not initialized. Check Firebase setup and API key configuration.");
@@ -74,17 +75,20 @@ class GeminiService implements AIService {
       promptBuffer.writeln("Target Audience: \"$audience\"");
     }
 
+    if (projectCategories != null && projectCategories.entries.any((e) => e.value != null && e.value!.isNotEmpty)) {
+      promptBuffer.writeln("\nProject Categories:");
+      projectCategories.forEach((category, value) {
+        if (value != null && value.isNotEmpty) {
+          promptBuffer.writeln("- $category: $value");
+        }
+      });
+    }
+
     if (questionnaireAnswers != null && questionnaireAnswers.entries.any((e) => e.value.isNotEmpty)) {
       promptBuffer.writeln("\nGuided Questionnaire Answers:");
-      questionnaireAnswers.forEach((questionId, answer) { // Assuming questionId is a simple key for the question text.
-                                                              // Ideally, you'd pass the actual question text.
-                                                              // For this example, we'll use the ID as a stand-in for question text.
+      questionnaireAnswers.forEach((questionText, answer) {
         if (answer.isNotEmpty) {
-          // To make it more readable for the AI, find the original question text if possible.
-          // This part is a bit tricky without access to _initialQuestionsData here.
-          // For now, just sending "Question ID (questionId): answer".
-          // A better approach would be to pass question text along with answers.
-          promptBuffer.writeln("- Question about '$questionId': $answer");
+          promptBuffer.writeln("- $questionText: $answer");
         }
       });
     }
@@ -107,7 +111,7 @@ class GeminiService implements AIService {
     promptBuffer.writeln("Ensure the output is ONLY the JSON object, with no other text before or after it.");
 
     final String prompt = promptBuffer.toString();
-    print("Gemini Prompt (JSON request with Q&A):\n$prompt");
+    print("Gemini Prompt (with Categories & Q&A):\n$prompt");
 
     try {
       // 2. Make the API call

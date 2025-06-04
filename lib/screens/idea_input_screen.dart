@@ -32,6 +32,28 @@ class _IdeaInputScreenState extends ConsumerState<IdeaInputScreen> {
   List<GuidedQuestion> _guidedQuestionList = [];
   Map<String, TextEditingController> _guidedQuestionControllers = {};
 
+  final Map<String, List<String>> _projectCategoriesDefinition = {
+    'Project Type': [
+      'Mobile App', 'Web Application', 'Desktop Application', 'Game',
+      'API/Backend Service', 'AI/ML Project', 'IoT Project', 'Other'
+    ],
+    'Industry': [
+      'Healthcare', 'Finance/Fintech', 'Education/EdTech', 'E-commerce/Retail',
+      'Productivity/Tools', 'Social Media/Networking', 'Entertainment',
+      'Travel/Hospitality', 'Real Estate', 'Manufacturing', 'Other'
+    ],
+    'Project Scale': [
+      'Personal/Solo', 'Small Team (2-5 people)', 'Medium Team (6-15 people)',
+      'Large Team (16+ people)', 'Enterprise Level'
+    ],
+  };
+
+  Map<String, String?> _selectedCategories = {
+    'Project Type': null,
+    'Industry': null,
+    'Project Scale': null,
+  };
+
   @override
   void initState() {
     super.initState();
@@ -72,12 +94,9 @@ class _IdeaInputScreenState extends ConsumerState<IdeaInputScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Describe Your Project Concept',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: MacosTheme.of(context).typography.title2,
                   ),
                   const SizedBox(height: 8),
                   MacosTextField(
@@ -106,9 +125,9 @@ class _IdeaInputScreenState extends ConsumerState<IdeaInputScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Guided Questions:',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                            style: MacosTheme.of(context).typography.headline,
                           ),
                           const SizedBox(height: 12),
                           ..._guidedQuestionList.map((question) {
@@ -117,7 +136,7 @@ class _IdeaInputScreenState extends ConsumerState<IdeaInputScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(question.text, style: const TextStyle(fontWeight: FontWeight.normal)),
+                                  Text(question.text, style: MacosTheme.of(context).typography.body),
                                   const SizedBox(height: 6),
                                   MacosTextField(
                                     controller: _guidedQuestionControllers[question.id],
@@ -133,36 +152,49 @@ class _IdeaInputScreenState extends ConsumerState<IdeaInputScreen> {
                     ),
                   const SizedBox(height: 24), // Existing SizedBox before Project Categorization placeholder
 
-                  // Placeholder for Project Categorization
-                  const Text(
-                    'Project Categorization (Coming Soon)',
-                     style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: MacosColors.systemGray, // Placeholder styling
-                    ),
+                  // Project Categorization Section
+                  Text(
+                    'Project Categorization',
+                    style: MacosTheme.of(context).typography.headline,
                   ),
-                  const SizedBox(height: 8),
-                   Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: const Color.fromRGBO(211, 211, 211, 1)), // light grey
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Text(
-                      'Select project type, industry, scale, etc. here.',
-                       style: TextStyle(color: MacosColors.systemGray),
-                    ),
-                  ),
+                  const SizedBox(height: 12),
+
+                  ..._projectCategoriesDefinition.entries.map((entry) {
+                    final categoryName = entry.key;
+                    final options = entry.value;
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(categoryName, style: MacosTheme.of(context).typography.body),
+                          const SizedBox(height: 6),
+                          MacosPopupButton<String>(
+                            value: _selectedCategories[categoryName],
+                            // Hint to show when no value is selected
+                            hint: Text('Select $categoryName...'),
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                _selectedCategories[categoryName] = newValue;
+                              });
+                            },
+                            items: options.map<MacosPopupMenuItem<String>>((String value) {
+                              return MacosPopupMenuItem<String>(
+                                value: value,
+                                child: Text(value),
+                              );
+                            }).toList(),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
                   const SizedBox(height: 24), // Add some space
 
                   // Project Goals
-                  const Text(
+                  Text(
                     'Project Goals',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: MacosTheme.of(context).typography.headline,
                   ),
                   const SizedBox(height: 8),
                   MacosTextField(
@@ -174,12 +206,9 @@ class _IdeaInputScreenState extends ConsumerState<IdeaInputScreen> {
                   const SizedBox(height: 24),
 
                   // Target Audience
-                  const Text(
+                  Text(
                     'Target Audience',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: MacosTheme.of(context).typography.headline,
                   ),
                   const SizedBox(height: 8),
                   MacosTextField(
@@ -204,8 +233,8 @@ class _IdeaInputScreenState extends ConsumerState<IdeaInputScreen> {
                             context: context,
                             builder: (_) => MacosAlertDialog(
                               appIcon: const MacosIcon(CupertinoIcons.exclamationmark_triangle, size: 56),
-                              title: const Text('Concept Missing'),
-                              message: const Text('Please enter your project concept before proceeding. Goals and audience are optional for now.'),
+                              title: Text('Concept Missing', style: MacosTheme.of(context).typography.headline),
+                              message: Text('Please enter your project concept before proceeding. Goals and audience are optional for now.', style: MacosTheme.of(context).typography.body),
                               primaryButton: PushButton(
                                 buttonSize: ButtonSize.large,
                                 child: const Text('OK'),
@@ -233,6 +262,14 @@ class _IdeaInputScreenState extends ConsumerState<IdeaInputScreen> {
                           });
                         }
 
+                        // Collect project categories
+                        Map<String, String> finalSelectedCategories = {};
+                        _selectedCategories.forEach((categoryName, selectedOption) {
+                          if (selectedOption != null && selectedOption.isNotEmpty) {
+                            finalSelectedCategories[categoryName] = selectedOption;
+                          }
+                        });
+
                         try {
                           final aiService = ref.read(aiServiceProvider); // Use ref.read here
                           final analysisResult = await aiService.analyzeProjectIdea(
@@ -240,6 +277,7 @@ class _IdeaInputScreenState extends ConsumerState<IdeaInputScreen> {
                             goals: goals,
                             audience: audience,
                             questionnaireAnswers: collectedQuestionnaireAnswers, // Pass the collected answers
+                            projectCategories: finalSelectedCategories, // Pass the collected categories
                           );
 
                           // For now, we reuse the existing dialog logic. This will be improved in the next step.
@@ -280,8 +318,8 @@ class _IdeaInputScreenState extends ConsumerState<IdeaInputScreen> {
                               context: context,
                               builder: (_) => MacosAlertDialog(
                                 appIcon: const FlutterLogo(size: 56), // Or a more relevant icon
-                                title: const Text('Project Expansion Analysis'),
-                                message: Text(dialogMessage.toString()), // Display the structured info
+                              title: Text('Project Expansion Analysis', style: MacosTheme.of(context).typography.headline),
+                              message: Text(dialogMessage.toString(), style: MacosTheme.of(context).typography.body),
                                 primaryButton: PushButton(
                                   buttonSize: ButtonSize.large,
                                   child: const Text('OK'),
@@ -296,8 +334,8 @@ class _IdeaInputScreenState extends ConsumerState<IdeaInputScreen> {
                               context: context,
                               builder: (_) => MacosAlertDialog(
                                 appIcon: const MacosIcon(CupertinoIcons.exclamationmark_circle, color: MacosColors.systemRed, size: 56),
-                                title: const Text('Error'),
-                                message: Text('An error occurred during AI analysis: ${e.toString()}'),
+                              title: Text('Error', style: MacosTheme.of(context).typography.headline),
+                              message: Text('An error occurred during AI analysis: ${e.toString()}', style: MacosTheme.of(context).typography.body),
                                 primaryButton: PushButton(
                                   buttonSize: ButtonSize.large,
                                   child: const Text('OK'),

@@ -82,17 +82,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text(
+                        Text(
                           'ProjectVision: AI-Powered Project Scaffolding',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: MacosTheme.of(context).typography.largeTitle,
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 20),
-                        const Text(
+                        Text(
                           'Transform your project ideas into comprehensive plans.\nClick "New Project Idea" in the sidebar or the "+" button to get started.',
+                          style: MacosTheme.of(context).typography.body,
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 30),

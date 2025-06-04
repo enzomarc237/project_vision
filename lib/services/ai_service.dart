@@ -12,6 +12,7 @@ abstract class AIService {
     required String concept,
     String? goals, // Optional for now
     String? audience, // Optional for now
-    Map<String, String>? questionnaireAnswers, // New optional parameter
+    Map<String, String>? questionnaireAnswers,
+    Map<String, String>? projectCategories, // New optional parameter
   });
 }

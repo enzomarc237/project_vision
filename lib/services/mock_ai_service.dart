@@ -10,39 +10,57 @@ class MockAIService implements AIService {
     required String concept,
     String? goals,
     String? audience,
-    Map<String, String>? questionnaireAnswers, // New parameter
+    Map<String, String>? questionnaireAnswers,
+    Map<String, String>? projectCategories, // New parameter
   }) async {
-    // Simulate network delay
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 1)); // Slightly reduced delay
 
-    if (concept.isEmpty && (questionnaireAnswers == null || questionnaireAnswers.values.every((ans) => ans.isEmpty))) {
-      throw Exception("Project concept or at least one questionnaire answer cannot be empty.");
+    // Adjusted validation: concept or questionnaire or categories should have some input
+    bool conceptProvided = concept.isNotEmpty;
+    bool qnaProvided = questionnaireAnswers != null && questionnaireAnswers.values.any((ans) => ans.isNotEmpty);
+    bool categoriesProvided = projectCategories != null && projectCategories.values.any((cat) => cat != null && cat.isNotEmpty);
+
+    if (!conceptProvided && !qnaProvided && !categoriesProvided) {
+      throw Exception("At least one input (concept, questionnaire, or category) must be provided.");
     }
 
-    String summary = "Based on your concept: \"$concept\", ";
-    if (goals != null && goals.isNotEmpty) {
-      summary += "with goals to \"$goals\", ";
+    StringBuffer summaryBuffer = StringBuffer();
+    summaryBuffer.write("Based on your input: ");
+    if (conceptProvided) summaryBuffer.write("Concept: \"$concept\". ");
+    if (goals != null && goals.isNotEmpty) summaryBuffer.write("Goals: \"$goals\". ");
+    if (audience != null && audience.isNotEmpty) summaryBuffer.write("Target Audience: \"$audience\". ");
+
+    if (projectCategories != null && projectCategories.isNotEmpty) {
+      summaryBuffer.write("\nProject Categories: ");
+      List<String> categoryEntries = [];
+      projectCategories.forEach((key, value) {
+        if (value != null && value.isNotEmpty) { // Ensure value is not null and not empty
+            categoryEntries.add("$key: $value");
+        }
+      });
+      if (categoryEntries.isNotEmpty) {
+        summaryBuffer.write(categoryEntries.join(', ') + ". ");
+      }
     }
-    if (audience != null && audience.isNotEmpty) {
-      summary += "targeting \"$audience\", ";
-    }
-    summary += "our AI suggests the following expansions.";
+
+    summaryBuffer.write("Our AI suggests the following expansions.");
 
     if (questionnaireAnswers != null && questionnaireAnswers.isNotEmpty) {
-      summary += "\n\nGuided Questionnaire Insights:";
+      summaryBuffer.write("\n\nGuided Questionnaire Insights:");
       questionnaireAnswers.forEach((question, answer) {
         if (answer.isNotEmpty) {
-          summary += "\n- Q: $question\n  A: $answer"; // Simple display of Q&A
+          summaryBuffer.write("\n- Q: $question\n  A: $answer");
         }
       });
     }
 
-    // ... (rest of the mock feature and risk generation logic remains the same) ...
+    String summary = summaryBuffer.toString();
+
     List<ProjectFeature> mockFeatures = [
       ProjectFeature(name: "User Authentication", description: "Secure sign-up and login for users."),
       ProjectFeature(name: "Dashboard", description: "Main screen to display key information and navigation."),
     ];
-     if (concept.toLowerCase().contains("mobile app")) {
+    if (concept.toLowerCase().contains("mobile app")) {
       mockFeatures.add(ProjectFeature(name: "Push Notifications", description: "Engage users with timely updates."));
     }
     if (concept.toLowerCase().contains("e-commerce")) {
@@ -52,7 +70,13 @@ class MockAIService implements AIService {
     if (questionnaireAnswers?.entries.any((e) => e.key.contains("mvp") && e.value.isNotEmpty) ?? false) {
         mockFeatures.add(ProjectFeature(name: "MVP Feature from Q&A", description: "A feature suggested by questionnaire on MVP."));
     }
-
+    // Example: Add a feature if it's a 'Mobile App'
+    if (projectCategories?['Project Type'] == 'Mobile App') {
+      mockFeatures.add(ProjectFeature(name: "Mobile UI/UX Adaptation", description: "Specific design considerations for mobile platforms."));
+    }
+    if (projectCategories?['Industry'] == 'Healthcare') {
+        mockFeatures.add(ProjectFeature(name: "HIPAA Compliance Module", description: "Considerations for handling sensitive health information."));
+    }
 
     List<ProjectRisk> mockRisks = [
       ProjectRisk(description: "Scope Creep", mitigation: "Define a clear MVP and stick to it for initial versions."),
