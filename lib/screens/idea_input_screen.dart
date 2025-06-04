@@ -3,6 +3,9 @@ import 'package:macos_ui/macos_ui.dart';
 import 'package:flutter/material.dart'; // Required for FlutterLogo
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:project_vision/providers/ai_provider.dart';
+import 'package:project_vision/models/expanded_project_idea.dart';
+// project_feature.dart and project_risk.dart are implicitly imported via expanded_project_idea.dart
+// but could be explicitly imported if direct instantiation or type usage was needed here.
 
 class IdeaInputScreen extends ConsumerStatefulWidget {
   const IdeaInputScreen({super.key});
@@ -179,12 +182,44 @@ class _IdeaInputScreenState extends ConsumerState<IdeaInputScreen> {
 
                           // For now, we reuse the existing dialog logic. This will be improved in the next step.
                           if (mounted) { // Check if the widget is still in the tree
+                            // Cast analysisResult to ExpandedProjectIdea if type isn't inferred
+                            final ExpandedProjectIdea structuredResult = analysisResult;
+
+                            // Build a more structured message for the dialog
+                            StringBuffer dialogMessage = StringBuffer();
+                            dialogMessage.writeln("AI Analysis (Mock):");
+                            dialogMessage.writeln("===================");
+                            dialogMessage.writeln("Summary: ${structuredResult.summary}");
+                            dialogMessage.writeln("\nSuggested Features:");
+                            if (structuredResult.features.isEmpty) {
+                              dialogMessage.writeln("- None suggested at this time.");
+                            } else {
+                              for (var feature in structuredResult.features.take(3)) { // Show up to 3 features
+                                dialogMessage.writeln("- ${feature.name}: ${feature.description}");
+                              }
+                              if (structuredResult.features.length > 3) {
+                                dialogMessage.writeln("- ...and more.");
+                              }
+                            }
+
+                            dialogMessage.writeln("\nPotential Risks:");
+                            if (structuredResult.risks.isEmpty) {
+                              dialogMessage.writeln("- None identified at this time.");
+                            } else {
+                              for (var risk in structuredResult.risks.take(2)) { // Show up to 2 risks
+                                dialogMessage.writeln("- ${risk.description} (Mitigation: ${risk.mitigation})");
+                              }
+                              if (structuredResult.risks.length > 2) {
+                                dialogMessage.writeln("- ...and more.");
+                              }
+                            }
+
                             showMacosAlertDialog(
                               context: context,
                               builder: (_) => MacosAlertDialog(
-                                appIcon: const FlutterLogo(size: 56),
-                                title: const Text('AI Analysis (Mock)'),
-                                message: Text(analysisResult), // Display the AI service's response
+                                appIcon: const FlutterLogo(size: 56), // Or a more relevant icon
+                                title: const Text('Project Expansion Analysis'),
+                                message: Text(dialogMessage.toString()), // Display the structured info
                                 primaryButton: PushButton(
                                   buttonSize: ButtonSize.large,
                                   child: const Text('OK'),
