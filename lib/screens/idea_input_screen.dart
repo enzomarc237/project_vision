@@ -1,18 +1,21 @@
 import 'package:flutter/cupertino.dart';
 import 'package:macos_ui/macos_ui.dart';
 import 'package:flutter/material.dart'; // Required for FlutterLogo
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:project_vision/providers/ai_provider.dart';
 
-class IdeaInputScreen extends StatefulWidget {
+class IdeaInputScreen extends ConsumerStatefulWidget {
   const IdeaInputScreen({super.key});
 
   @override
-  State<IdeaInputScreen> createState() => _IdeaInputScreenState();
+  ConsumerState<IdeaInputScreen> createState() => _IdeaInputScreenState();
 }
 
-class _IdeaInputScreenState extends State<IdeaInputScreen> {
+class _IdeaInputScreenState extends ConsumerState<IdeaInputScreen> {
   final _projectConceptController = TextEditingController();
   final _projectGoalsController = TextEditingController();
   final _targetAudienceController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -140,30 +143,12 @@ class _IdeaInputScreenState extends State<IdeaInputScreen> {
                     alignment: Alignment.centerRight,
                     child: PushButton(
                       buttonSize: ButtonSize.large,
-                      onPressed: () {
+                      onPressed: _isLoading ? null : () async { // Disable button when loading
                         final concept = _projectConceptController.text;
-                        final goals = _projectGoalsController.text; // New
-                        final audience = _targetAudienceController.text; // New
+                        final goals = _projectGoalsController.text;
+                        final audience = _targetAudienceController.text;
 
-                        if (concept.isNotEmpty) {
-                          print('Project Concept: $concept');
-                          print('Project Goals: $goals'); // New
-                          print('Target Audience: $audience'); // New
-                          showMacosAlertDialog(
-                            context: context,
-                            builder: (_) => MacosAlertDialog(
-                              appIcon: const FlutterLogo(size: 56),
-                              title: const Text('Details Captured (For Now)'),
-                              message: Text(
-                                  'Concept: "$concept"\nGoals: "$goals"\nAudience: "$audience"\n\nMore features coming soon!'),
-                              primaryButton: PushButton(
-                                buttonSize: ButtonSize.large,
-                                child: const Text('OK'),
-                                onPressed: () => Navigator.of(context).pop(),
-                              ),
-                            ),
-                          );
-                        } else {
+                        if (concept.isEmpty) {
                           showMacosAlertDialog(
                             context: context,
                             builder: (_) => MacosAlertDialog(
@@ -177,9 +162,64 @@ class _IdeaInputScreenState extends State<IdeaInputScreen> {
                               ),
                             ),
                           );
+                          return; // Stop execution if concept is empty
+                        }
+
+                        setState(() {
+                          _isLoading = true;
+                        });
+
+                        try {
+                          final aiService = ref.read(aiServiceProvider); // Use ref.read here
+                          final analysisResult = await aiService.analyzeProjectIdea(
+                            concept: concept,
+                            goals: goals,
+                            audience: audience,
+                          );
+
+                          // For now, we reuse the existing dialog logic. This will be improved in the next step.
+                          if (mounted) { // Check if the widget is still in the tree
+                            showMacosAlertDialog(
+                              context: context,
+                              builder: (_) => MacosAlertDialog(
+                                appIcon: const FlutterLogo(size: 56),
+                                title: const Text('AI Analysis (Mock)'),
+                                message: Text(analysisResult), // Display the AI service's response
+                                primaryButton: PushButton(
+                                  buttonSize: ButtonSize.large,
+                                  child: const Text('OK'),
+                                  onPressed: () => Navigator.of(context).pop(),
+                                ),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          if (mounted) { // Check if the widget is still in the tree
+                            showMacosAlertDialog(
+                              context: context,
+                              builder: (_) => MacosAlertDialog(
+                                appIcon: const MacosIcon(CupertinoIcons.exclamationmark_circle, color: MacosColors.systemRed, size: 56),
+                                title: const Text('Error'),
+                                message: Text('An error occurred during AI analysis: ${e.toString()}'),
+                                primaryButton: PushButton(
+                                  buttonSize: ButtonSize.large,
+                                  child: const Text('OK'),
+                                  onPressed: () => Navigator.of(context).pop(),
+                                ),
+                              ),
+                            );
+                          }
+                        } finally {
+                          if (mounted) { // Check if the widget is still in the tree
+                            setState(() {
+                              _isLoading = false;
+                            });
+                          }
                         }
                       },
-                      child: const Text('Next: Add Context'), // Or "Process Idea"
+                      child: _isLoading
+                          ? const ProgressCircle(value: null) // Indeterminate progress
+                          : const Text('Next: Add Context'),
                     ),
                   ),
                 ],
