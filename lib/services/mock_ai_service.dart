@@ -10,12 +10,13 @@ class MockAIService implements AIService {
     required String concept,
     String? goals,
     String? audience,
+    Map<String, String>? questionnaireAnswers, // New parameter
   }) async {
     // Simulate network delay
     await Future.delayed(const Duration(seconds: 2));
 
-    if (concept.isEmpty) {
-      throw Exception("Project concept cannot be empty.");
+    if (concept.isEmpty && (questionnaireAnswers == null || questionnaireAnswers.values.every((ans) => ans.isEmpty))) {
+      throw Exception("Project concept or at least one questionnaire answer cannot be empty.");
     }
 
     String summary = "Based on your concept: \"$concept\", ";
@@ -27,17 +28,29 @@ class MockAIService implements AIService {
     }
     summary += "our AI suggests the following expansions.";
 
+    if (questionnaireAnswers != null && questionnaireAnswers.isNotEmpty) {
+      summary += "\n\nGuided Questionnaire Insights:";
+      questionnaireAnswers.forEach((question, answer) {
+        if (answer.isNotEmpty) {
+          summary += "\n- Q: $question\n  A: $answer"; // Simple display of Q&A
+        }
+      });
+    }
+
+    // ... (rest of the mock feature and risk generation logic remains the same) ...
     List<ProjectFeature> mockFeatures = [
       ProjectFeature(name: "User Authentication", description: "Secure sign-up and login for users."),
       ProjectFeature(name: "Dashboard", description: "Main screen to display key information and navigation."),
     ];
-
-    if (concept.toLowerCase().contains("mobile app")) {
+     if (concept.toLowerCase().contains("mobile app")) {
       mockFeatures.add(ProjectFeature(name: "Push Notifications", description: "Engage users with timely updates."));
     }
-     if (concept.toLowerCase().contains("e-commerce")) {
+    if (concept.toLowerCase().contains("e-commerce")) {
       mockFeatures.add(ProjectFeature(name: "Shopping Cart", description: "Allow users to select and purchase items."));
       mockFeatures.add(ProjectFeature(name: "Payment Gateway Integration", description: "Securely process online payments."));
+    }
+    if (questionnaireAnswers?.entries.any((e) => e.key.contains("mvp") && e.value.isNotEmpty) ?? false) {
+        mockFeatures.add(ProjectFeature(name: "MVP Feature from Q&A", description: "A feature suggested by questionnaire on MVP."));
     }
 
 

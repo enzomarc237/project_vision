@@ -4,6 +4,7 @@ import 'package:flutter/material.dart'; // Required for FlutterLogo
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:project_vision/providers/ai_provider.dart';
 import 'package:project_vision/models/expanded_project_idea.dart';
+import 'package:project_vision/models/guided_question.dart';
 // project_feature.dart and project_risk.dart are implicitly imported via expanded_project_idea.dart
 // but could be explicitly imported if direct instantiation or type usage was needed here.
 
@@ -19,12 +20,37 @@ class _IdeaInputScreenState extends ConsumerState<IdeaInputScreen> {
   final _projectGoalsController = TextEditingController();
   final _targetAudienceController = TextEditingController();
   bool _isLoading = false;
+  bool _showGuidedQuestions = false; // Toggle for showing/hiding questionnaire
+
+  final List<Map<String, String>> _initialQuestionsData = [
+    {'id': 'problem', 'text': 'What specific problem does your project aim to solve?'},
+    {'id': 'mvp_features', 'text': 'What are 2-3 core features essential for an MVP (Minimum Viable Product)?'},
+    {'id': 'unique_value', 'text': 'What makes your project unique compared to potential alternatives?'},
+    {'id': 'success_metrics', 'text': 'What are the primary success metrics for this project?'},
+  ];
+
+  List<GuidedQuestion> _guidedQuestionList = [];
+  Map<String, TextEditingController> _guidedQuestionControllers = {};
+
+  @override
+  void initState() {
+    super.initState();
+    // Existing controllers for project concept, goals, audience are already initialized
+
+    for (var qData in _initialQuestionsData) {
+      _guidedQuestionList.add(GuidedQuestion(id: qData['id']!, text: qData['text']!));
+      _guidedQuestionControllers[qData['id']!] = TextEditingController();
+    }
+  }
 
   @override
   void dispose() {
     _projectConceptController.dispose();
     _projectGoalsController.dispose();
     _targetAudienceController.dispose();
+    for (var controller in _guidedQuestionControllers.values) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
@@ -62,28 +88,50 @@ class _IdeaInputScreenState extends ConsumerState<IdeaInputScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Placeholder for Guided Questionnaire
-                  const Text(
-                    'Guided Questionnaire (Coming Soon)',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: MacosColors.systemGray, // Placeholder styling
-                    ),
+                  // Guided Questionnaire Toggle and Section
+                  MacosSwitch(
+                    value: _showGuidedQuestions,
+                    onChanged: (value) {
+                      setState(() {
+                        _showGuidedQuestions = value;
+                      });
+                    },
                   ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: const Color.fromRGBO(211, 211, 211, 1)), // light grey
-                      borderRadius: BorderRadius.circular(8),
+                  const SizedBox(width: 8),
+                  const Text('Use Guided Questionnaire (Optional)'),
+
+                  if (_showGuidedQuestions)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16.0, left: 8.0, right: 8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Guided Questions:',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                          ),
+                          const SizedBox(height: 12),
+                          ..._guidedQuestionList.map((question) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(question.text, style: const TextStyle(fontWeight: FontWeight.normal)),
+                                  const SizedBox(height: 6),
+                                  MacosTextField(
+                                    controller: _guidedQuestionControllers[question.id],
+                                    placeholder: 'Your answer...',
+                                    maxLines: 2,
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                        ],
+                      ),
                     ),
-                    child: const Text(
-                      'This section will offer structured questions to help you develop your idea further.',
-                       style: TextStyle(color: MacosColors.systemGray),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 24), // Existing SizedBox before Project Categorization placeholder
 
                   // Placeholder for Project Categorization
                   const Text(
@@ -172,12 +220,26 @@ class _IdeaInputScreenState extends ConsumerState<IdeaInputScreen> {
                           _isLoading = true;
                         });
 
+                        // Collect questionnaire answers
+                        Map<String, String> collectedQuestionnaireAnswers = {};
+                        if (_showGuidedQuestions) { // Only collect if the questionnaire is visible and used
+                          _guidedQuestionControllers.forEach((id, controller) {
+                            if (controller.text.trim().isNotEmpty) {
+                              // Find the original question text using the id to make the map more meaningful
+                              // This assumes _guidedQuestionList is populated with GuidedQuestion objects that have 'id' and 'text'
+                              final questionText = _guidedQuestionList.firstWhere((q) => q.id == id, orElse: () => GuidedQuestion(id: id, text: id)).text;
+                              collectedQuestionnaireAnswers[questionText] = controller.text.trim();
+                            }
+                          });
+                        }
+
                         try {
                           final aiService = ref.read(aiServiceProvider); // Use ref.read here
                           final analysisResult = await aiService.analyzeProjectIdea(
                             concept: concept,
                             goals: goals,
                             audience: audience,
+                            questionnaireAnswers: collectedQuestionnaireAnswers, // Pass the collected answers
                           );
 
                           // For now, we reuse the existing dialog logic. This will be improved in the next step.
