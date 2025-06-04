@@ -1,13 +1,28 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:project_vision/services/ai_service.dart';
+import 'package:project_vision/services/mock_ai_service.dart'; // Import MockAIService
+import 'package:project_vision/services/gemini_service.dart'; // Import GeminiService
 
-// Provider for the AIService.
-// This will allow us to easily swap out the MockAIService for a real implementation later.
+// Configuration flag to easily switch between mock and real service
+// Set to true to use MockAIService, false to use GeminiService.
+// TODO: This should ideally be managed by a more robust configuration system
+// (e.g., environment variables, build flavors, or a settings service).
+const bool useMockService = false; // Default to GeminiService for integration
+
 final aiServiceProvider = Provider<AIService>((ref) {
-  // For now, we provide the MockAIService.
-  // In the future, we could use environment variables or other configurations
-  // to switch to a real AI service implementation.
-  return MockAIService();
+  if (useMockService) {
+    print("AI Provider: Using MockAIService");
+    return MockAIService();
+  } else {
+    print("AI Provider: Using GeminiService");
+    // Ensure Firebase is initialized before GeminiService is instantiated
+    // if GeminiService constructor relies on Firebase.initializeApp immediately.
+    // However, our GeminiService initializes the model in its constructor,
+    // and main.dart already calls WidgetsFlutterBinding.ensureInitialized()
+    // and potentially Firebase.initializeApp() if we add it there.
+    // For safety, ensure Firebase.initializeApp() has completed if direct dependency.
+    return GeminiService();
+  }
 });
 
 // If you anticipate needing to manage state related to AI interactions
