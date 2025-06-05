@@ -12,28 +12,28 @@ dependencies:
   cupertino_icons: ^1.0.2
   riverpod: ^2.3.6
   flutter_riverpod: ^2.3.6
-  http: ^0.13.5 # Consider updating to a newer version if available e.g. ^1.1.0
+  http: any # Consider updating to a newer version if available e.g. ^1.1.0
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   path_provider: ^2.0.15
-  firebase_core: ^2.13.1
-  firebase_auth: ^4.6.2
-  cloud_firestore: ^4.8.0
-  flutter_markdown: ^0.6.14
+  firebase_core: any
+  firebase_auth: ^5.5.4
+  cloud_firestore: ^5.6.8
+  flutter_markdown: ^0.7.7+1
   pdf: ^3.10.1
   url_launcher: ^6.1.11
-  share_plus: ^7.0.2
-  flutter_quill: ^7.2.0
-  macos_ui: ^1.12.2
-  firebase_ai: ^0.2.0
-  macos_window_utils: ^2.2.0
+  share_plus: ^11.0.0
+  flutter_quill: ^11.4.1
+  macos_ui: ^2.1.10
+  firebase_ai: any
+  macos_window_utils: any
   uuid: ^4.3.3
-  intl: ^0.19.0
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.0 # Or a newer version
+  flutter_lints: ^6.0.0 # Or a newer version
   hive_generator: ^2.0.1
   build_runner: ^2.4.8
 

@@ -25,8 +25,8 @@ class GeminiService implements AIService {
     // Example: 'gemini-pro' or specific multimodal models if needed.
     // Location can also be specified if needed.
     try {
-      _model = FirebaseAI.instance.generativeModel(
-        modelName: 'gemini-pro', // A common text generation model
+      _model = FirebaseAI.googleAI().generativeModel(
+        model: 'gemini-pro', // A common text generation model
         // generationConfig: GenerationConfig(...) // Optional: for temperature, topK, etc.
         // safetySettings: [...] // Optional: for safety configurations
       );

@@ -230,14 +230,14 @@ class _IdeaInputScreenState extends ConsumerState<IdeaInputScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         PushButton(
-                          buttonSize: ButtonSize.large,
+                          controlSize: ControlSize.large,
                           secondary: true, // Make it look like a secondary action initially
                           onPressed: _handleSaveProject, // New handler function
                           child: const Text('Save Project'),
                         ),
                         const SizedBox(width: 12),
                         PushButton(
-                          buttonSize: ButtonSize.large,
+                          controlSize: ControlSize.large,
                           onPressed: _isLoading ? null : _handleAnalyzeProject, // Existing handler, rename for clarity
                           child: _isLoading
                               ? const ProgressCircle(value: null)
@@ -268,7 +268,7 @@ class _IdeaInputScreenState extends ConsumerState<IdeaInputScreen> {
           title: Text('Concept Missing', style: MacosTheme.of(context).typography.headline),
           message: Text('Please enter your project concept before proceeding. Goals and audience are optional for now.', style: MacosTheme.of(context).typography.body),
           primaryButton: PushButton(
-            buttonSize: ButtonSize.large,
+            controlSize: ControlSize.large,
             child: const Text('OK'),
             onPressed: () => Navigator.of(context).pop(),
           ),
@@ -349,7 +349,7 @@ class _IdeaInputScreenState extends ConsumerState<IdeaInputScreen> {
             title: Text('Project Expansion Analysis', style: MacosTheme.of(context).typography.headline),
             message: Text(dialogMessage.toString(), style: MacosTheme.of(context).typography.body),
             primaryButton: PushButton(
-              buttonSize: ButtonSize.large,
+              controlSize: ControlSize.large,
               child: const Text('OK'),
               onPressed: () => Navigator.of(context).pop(),
             ),
@@ -361,11 +361,11 @@ class _IdeaInputScreenState extends ConsumerState<IdeaInputScreen> {
         showMacosAlertDialog(
           context: context,
           builder: (_) => MacosAlertDialog(
-            appIcon: const MacosIcon(CupertinoIcons.exclamationmark_circle, color: MacosColors.systemRed, size: 56),
+            appIcon: const MacosIcon(CupertinoIcons.exclamationmark_circle, color: MacosColors.systemRedColor, size: 56),
             title: Text('Error', style: MacosTheme.of(context).typography.headline),
             message: Text('An error occurred during AI analysis: ${e.toString()}', style: MacosTheme.of(context).typography.body),
             primaryButton: PushButton(
-              buttonSize: ButtonSize.large,
+              controlSize: ControlSize.large,
               child: const Text('OK'),
               onPressed: () => Navigator.of(context).pop(),
             ),
@@ -390,7 +390,7 @@ class _IdeaInputScreenState extends ConsumerState<IdeaInputScreen> {
           title: Text('Cannot Save Project', style: MacosTheme.of(context).typography.headline),
           message: Text('Please enter a project concept or analyze an idea first.', style: MacosTheme.of(context).typography.body),
           primaryButton: PushButton(
-            buttonSize: ButtonSize.large,
+            controlSize: ControlSize.large,
             child: const Text('OK'),
             onPressed: () => Navigator.of(context).pop(),
           ),
@@ -409,7 +409,7 @@ class _IdeaInputScreenState extends ConsumerState<IdeaInputScreen> {
             title: Text('Save Canceled', style: MacosTheme.of(context).typography.headline),
             message: Text('Project title is required to save.', style: MacosTheme.of(context).typography.body),
             primaryButton: PushButton(
-              buttonSize: ButtonSize.large,
+              controlSize: ControlSize.large,
               child: const Text('OK'),
               onPressed: () => Navigator.of(context).pop(),
             ),
@@ -465,11 +465,11 @@ class _IdeaInputScreenState extends ConsumerState<IdeaInputScreen> {
         showMacosAlertDialog(
           context: context,
           builder: (_) => MacosAlertDialog(
-            appIcon: const MacosIcon(CupertinoIcons.check_mark_circled, size: 56, color: MacosColors.systemGreen),
+            appIcon: const MacosIcon(CupertinoIcons.check_mark_circled, size: 56, color: MacosColors.systemGreenColor),
             title: Text('Project Saved', style: MacosTheme.of(context).typography.headline),
             message: Text('Project "$projectTitle" has been saved successfully.', style: MacosTheme.of(context).typography.body),
             primaryButton: PushButton(
-              buttonSize: ButtonSize.large,
+              controlSize: ControlSize.large,
               child: const Text('OK'),
               onPressed: () => Navigator.of(context).pop(),
             ),
@@ -481,11 +481,11 @@ class _IdeaInputScreenState extends ConsumerState<IdeaInputScreen> {
         showMacosAlertDialog(
           context: context,
           builder: (_) => MacosAlertDialog(
-            appIcon: const MacosIcon(CupertinoIcons.xmark_octagon, size: 56, color: MacosColors.systemRed),
+            appIcon: const MacosIcon(CupertinoIcons.xmark_octagon, size: 56, color: MacosColors.systemRedColor),
             title: Text('Save Failed', style: MacosTheme.of(context).typography.headline),
             message: Text('Could not save the project: ${e.toString()}', style: MacosTheme.of(context).typography.body),
             primaryButton: PushButton(
-              buttonSize: ButtonSize.large,
+              controlSize: ControlSize.large,
               child: const Text('OK'),
               onPressed: () => Navigator.of(context).pop(),
             ),
@@ -508,14 +508,14 @@ class _IdeaInputScreenState extends ConsumerState<IdeaInputScreen> {
           autofocus: true,
         ),
         primaryButton: PushButton(
-          buttonSize: ButtonSize.large,
+          controlSize: ControlSize.large,
           child: const Text('Save'),
           onPressed: () {
             Navigator.of(context).pop(titleController.text);
           },
         ),
         secondaryButton: PushButton(
-          buttonSize: ButtonSize.large,
+          controlSize: ControlSize.large,
           secondary: true,
           child: const Text('Cancel'),
           onPressed: () {

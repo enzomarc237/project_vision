@@ -6,14 +6,17 @@ import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // New import
 import 'package:project_vision/providers/storage_provider.dart'; // New import
 
-class HomeScreen extends ConsumerStatefulWidget { // Changed to ConsumerStatefulWidget
+class HomeScreen extends ConsumerStatefulWidget {
+  // Changed to ConsumerStatefulWidget
   const HomeScreen({super.key});
 
   @override
-  ConsumerState<HomeScreen> createState() => _HomeScreenState(); // Changed to ConsumerState
+  ConsumerState<HomeScreen> createState() =>
+      _HomeScreenState(); // Changed to ConsumerState
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> { // Changed to ConsumerState
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  // Changed to ConsumerState
   int _pageIndex = 0;
   List<ProjectData> _savedProjects = [];
   bool _isLoadingProjects = true;
@@ -26,7 +29,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> { // Changed to Consume
 
   Future<void> _fetchSavedProjects() async {
     if (!mounted) return;
-    setState(() { _isLoadingProjects = true; });
+    setState(() {
+      _isLoadingProjects = true;
+    });
     try {
       final storageService = ref.read(storageServiceProvider);
       final projects = await storageService.getAllProjects();
@@ -37,7 +42,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> { // Changed to Consume
       }
     } catch (e) {
       if (mounted) {
-         print("Error fetching projects: $e");
+        print("Error fetching projects: $e");
       }
     } finally {
       if (mounted) {
@@ -59,7 +64,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> { // Changed to Consume
             onChanged: (index) {
               setState(() => _pageIndex = index);
               // For now, only one actual page, others are placeholders
-              if (index == 1) { // Assuming "New Project" is at index 1
+              if (index == 1) {
+                // Assuming "New Project" is at index 1
                 Navigator.of(context).push(
                   CupertinoPageRoute(builder: (_) => const IdeaInputScreen()),
                 );
@@ -75,7 +81,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> { // Changed to Consume
                 label: Text('New Project Idea'),
               ),
               SidebarItem(
-                leading: MacosIcon(CupertinoIcons.folder_special),
+                leading: MacosIcon(CupertinoIcons.folder_open),
                 label: Text('My Projects'),
               ),
               SidebarItem(
@@ -104,7 +110,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> { // Changed to Consume
                   icon: const MacosIcon(CupertinoIcons.add),
                   onPressed: () {
                     Navigator.of(context).push(
-                      CupertinoPageRoute(builder: (_) => const IdeaInputScreen()),
+                      CupertinoPageRoute(
+                          builder: (_) => const IdeaInputScreen()),
                     );
                   },
                   showLabel: false,
@@ -131,11 +138,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> { // Changed to Consume
                         ),
                         const SizedBox(height: 30),
                         PushButton(
-                          buttonSize: ButtonSize.large,
+                          controlSize: ControlSize.large,
                           child: const Text('Start a New Project'),
                           onPressed: () {
                             Navigator.of(context).push(
-                              CupertinoPageRoute(builder: (_) => const IdeaInputScreen()),
+                              CupertinoPageRoute(
+                                  builder: (_) => const IdeaInputScreen()),
                             );
                           },
                         ),
@@ -148,7 +156,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> { // Changed to Consume
           ),
           // Placeholder for "New Project Idea" screen content (Index 1)
           // This will be handled by navigation for now
-          Container(child: Center(child: Text("Redirecting to New Project Idea..."))),
+          Container(
+              child: Center(child: Text("Redirecting to New Project Idea..."))),
 
           // Content for "My Projects" (Index 2)
           MacosScaffold(
@@ -183,8 +192,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> { // Changed to Consume
                     itemBuilder: (context, index) {
                       final project = _savedProjects[index];
                       return MacosListTile(
-                        leading: MacosIcon(CupertinoIcons.doc_text, color: MacosTheme.of(context).primaryColor),
-                        title: Text(project.title, style: MacosTheme.of(context).typography.body),
+                        leading: MacosIcon(CupertinoIcons.doc_text,
+                            color: MacosTheme.of(context).primaryColor),
+                        title: Text(project.title,
+                            style: MacosTheme.of(context).typography.body),
                         subtitle: Text(
                           'Last updated: ${DateFormat.yMMMd().add_jm().format(project.lastUpdatedAt)}',
                           style: MacosTheme.of(context).typography.caption1,
@@ -192,22 +203,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> { // Changed to Consume
                         onClick: () {
                           print('Clicked on project: ${project.title}');
                           showMacosAlertDialog(
-                              context: context,
-                              builder: (_) => MacosAlertDialog(
-                                    appIcon: const MacosIcon(CupertinoIcons.doc_text),
-                                    title: Text(project.title, style: MacosTheme.of(context).typography.headline),
-                                    message: Text(
-                                      "Concept: ${project.projectConcept.substring(0, (project.projectConcept.length > 100) ? 100 : project.projectConcept.length)}${project.projectConcept.length > 100 ? "..." : ""}\n"
-                                      "Created: ${DateFormat.yMMMd().format(project.createdAt)}\n"
-                                      "${project.aiExpansionResults != null ? 'AI Summary: ${project.aiExpansionResults!.summary.substring(0, (project.aiExpansionResults!.summary.length > 100) ? 100 : project.aiExpansionResults!.summary.length)}${project.aiExpansionResults!.summary.length > 100 ? "..." : ""}' : 'No AI analysis found.'}",
-                                       style: MacosTheme.of(context).typography.body,
-                                    ),
-                                    primaryButton: PushButton(
-                                      buttonSize: ButtonSize.large,
-                                      child: const Text('OK'),
-                                      onPressed: () => Navigator.of(context).pop(),
-                                    ),
-                                  ));
+                            context: context,
+                            builder: (_) => MacosAlertDialog(
+                              appIcon: const MacosIcon(CupertinoIcons.doc_text),
+                              title: Text(project.title,
+                                  style: MacosTheme.of(context)
+                                      .typography
+                                      .headline),
+                              message: Text(
+                                "Concept: ${project.projectConcept.substring(0, (project.projectConcept.length > 100) ? 100 : project.projectConcept.length)}${project.projectConcept.length > 100 ? "..." : ""}\n"
+                                "Created: ${DateFormat.yMMMd().format(project.createdAt)}\n"
+                                "${project.aiExpansionResults != null ? 'AI Summary: ${project.aiExpansionResults!.summary.substring(0, (project.aiExpansionResults!.summary.length > 100) ? 100 : project.aiExpansionResults!.summary.length)}${project.aiExpansionResults!.summary.length > 100 ? "..." : ""}' : 'No AI analysis found.'}",
+                                style: MacosTheme.of(context).typography.body,
+                              ),
+                              primaryButton: PushButton(
+                                controlSize: ControlSize.large,
+                                child: const Text('OK'),
+                                onPressed: () => Navigator.of(context).pop(),
+                              ),
+                            ),
+                          );
                         },
                       );
                     },
